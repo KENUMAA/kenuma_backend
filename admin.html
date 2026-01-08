@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kenuma Pharma Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#c62828',
+            secondary: '#ff8a65',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #fffaf9; }
+    .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .btn-primary { background: #c62828; color: white; }
+    .btn-primary:hover { background: #b71c1c; }
+    .btn-danger { background: #d32f2f; color: white; }
+    .btn-danger:hover { background: #c62727; }
+  </style>
+</head>
+<body class="p-4 md:p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-primary">Kenuma Pharma Admin</h1>
+      <p class="text-gray-600">Manage products in real time — Ethiopian Birr (Br) ready</p>
+    </div>
+
+    <div class="card bg-white p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4" id="formTitle">➕ Add New Product</h2>
+      <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" id="editId" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Product Name</label>
+          <input type="text" id="name" class="w-full p-2 border rounded mt-1" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Price (Br)</label>
+          <input type="number" id="price" step="0.01" class="w-full p-2 border rounded mt-1" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Category</label>
+          <input type="text" id="category" class="w-full p-2 border rounded mt-1" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Image Path</label>
+          <input type="text" id="imageUrl" class="w-full p-2 border rounded mt-1" placeholder="assets/images/product.jpg" />
+        </div>
+        <div class="md:col-span-2 flex gap-3">
+          <button type="submit" class="btn-primary px-4 py-2 rounded font-medium">Save Product</button>
+          <button type="button" id="cancelEdit" class="px-4 py-2 border rounded text-gray-700">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card bg-white p-6">
+      <h2 class="text-xl font-semibold mb-4">📦 Product Inventory</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b">
+              <th class="pb-2">ID</th>
+              <th class="pb-2">Name</th>
+              <th class="pb-2">Price (Br)</th>
+              <th class="pb-2">Category</th>
+              <th class="pb-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="text-center text-gray-500 text-sm mt-8 pb-4">
+      © 2025 Kenuma Pharmaceutical and Cosmetics Delivery • Addis Ababa, Ethiopia
+    </footer>
+  </div>
+
+  <script>
+    const API_URL = 'http://10.201.114.178:3000/api';
+
+    window.onload = () => fetchProducts();
+
+    async function fetchProducts() {
+      try {
+        const res = await fetch(`${API_URL}/products`);
+        const products = await res.json();
+        const tbody = document.getElementById('productTableBody');
+        tbody.innerHTML = '';
+        products.forEach(p => {
+          const row = document.createElement('tr');
+          row.className = 'border-b hover:bg-gray-50';
+          row.innerHTML = `
+            <td class="py-3">${p.id}</td>
+            <td class="py-3 font-medium">${p.name}</td>
+            <td class="py-3 text-primary font-bold">Br ${p.price.toFixed(2)}</td>
+            <td class="py-3">${p.category}</td>
+            <td class="py-3 flex gap-2">
+              <button onclick="editProduct(${p.id})" class="text-blue-600 hover:underline">Edit</button>
+              <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:underline">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (e) {
+        alert('Failed to load products');
+      }
+    }
+
+    document.getElementById('productForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editId').value || Date.now();
+      const product = {
+        id: parseInt(id),
+        name: document.getElementById('name').value,
+        price: parseFloat(document.getElementById('price').value),
+        category: document.getElementById('category').value,
+        imageUrl: document.getElementById('imageUrl').value || 'assets/images/placeholder.jpg'
+      };
+
+      await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product)
+      });
+
+      document.getElementById('productForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('cancelEdit').style.display = 'none';
+      document.getElementById('formTitle').textContent = '➕ Add New Product';
+      fetchProducts();
+    };
+
+    function editProduct(id) {
+      fetch(`${API_URL}/products`)
+        .then(res => res.json())
+        .then(products => {
+          const p = products.find(x => x.id === id);
+          document.getElementById('editId').value = p.id;
+          document.getElementById('name').value = p.name;
+          document.getElementById('price').value = p.price;
+          document.getElementById('category').value = p.category;
+          document.getElementById('imageUrl').value = p.imageUrl;
+          document.getElementById('formTitle').textContent = '✏️ Edit Product';
+          document.getElementById('cancelEdit').style.display = 'inline-block';
+        });
+    }
+
+    document.getElementById('cancelEdit').onclick = () => {
+      document.getElementById('productForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('formTitle').textContent = '➕ Add New Product';
+      document.getElementById('cancelEdit').style.display = 'none';
+    };
+
+    async function deleteProduct(id) {
+      if (confirm('Delete this product?')) {
+        await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+        fetchProducts();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "Paracetamol", "price": 25.50, "category": "Medicines", "imageUrl": "https://kenuma-backend.onrender.com/images/paracetamol.jpg" },
+  { "id": 2, "name": "Vaseline", "price": 85.00, "category": "Cosmetics", "imageUrl": "https://kenuma-backend.onrender.com/images/vaseline.jpg" },
+  { "id": 3, "name": "Baby Diapers", "price": 320.00, "category": "Baby Products", "imageUrl": "https://kenuma-backend.onrender.com/images/baby_diapers.jpg" },
+  { "id": 4, "name": "Vitamin C", "price": 150.00, "category": "Vitamins", "imageUrl": "https://kenuma-backend.onrender.com/images/vitamin_c.jpg" },
+  { " id": 5, "name": "Face Mask", "price": 45.00, "category": "Personal Care", "imageUrl": "https://kenuma-backend.onrender.com/images/face_mask.jpg" }
+]
